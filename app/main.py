@@ -1,64 +1,24 @@
-from fastapi import Depends, FastAPI, HTTPException
-from sqlalchemy.orm import Session
+from fastapi import FastAPI
+from sqlalchemy.orm import declarative_base
 
-from . import crud, models, schemas
-from .database import SessionLocal, engine
+# Import the engine from your database configuration module
+from app.infra.db.database import engine
 
-models.Base.metadata.create_all(bind=engine)
+# Import your aggregated models
+from app.infra.db.models import *
 
+# Import routers from your modules
+from app.modules.user.routes import user_router
+
+# Create the FastAPI application instance
 app = FastAPI()
 
+# Include your routers
+app.include_router(user_router)
 
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# Create the database tables if they don't exist
+Base = declarative_base()
 
-
-@app.post("/users/", response_model=schemas.User)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = crud.get_user_by_email(db, email=user.email)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return crud.create_user(db=db, user=user)
-
-
-@app.get("/users/", response_model=list[schemas.User])
-def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    users = crud.get_users(db, skip=skip, limit=limit)
-    return users
-
-
-@app.get("/users/{user_id}", response_model=schemas.User)
-def read_user(user_id: int, db: Session = Depends(get_db)):
-    db_user = crud.get_user(db, user_id=user_id)
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return db_user
-
-
-@app.post("/users/{user_id}/items/", response_model=schemas.Item)
-def create_item_for_user(
-    user_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)
-):
-    return crud.create_user_item(db=db, item=item, user_id=user_id)
-
-
-@app.get("/items/", response_model=list[schemas.Item])
-def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    items = crud.get_items(db, skip=skip, limit=limit)
-    return items
-
-
-@app.delete("/users/{user_id}")
-def delete_user_by_id(user_id: int, db: Session = Depends(get_db)):
-    crud.delete_user(db, user_id)
-    return {"message": "User deleted successfully"}
-
-
-@app.put("/users/{user_id}")
-def update_user_by_id(user_id: int, user: schemas.UserCreate, db: Session = Depends(get_db)):
-    return crud.update_user(db, user_id, user)
+@app.on_event("startup")
+def startup_event():
+    Base.metadata.create_all(bind=engine)

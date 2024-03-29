@@ -1,0 +1,4 @@
+env
+# ignore fast api project
+alembic/__pycache__
+app/__pycache__
