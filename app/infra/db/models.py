@@ -2,6 +2,7 @@
 
 # Import models from each module
 from app.modules.user.models import User, Item
+
 # Import other models as needed
 # from app.modules.othermodule.models import OtherModel
 
