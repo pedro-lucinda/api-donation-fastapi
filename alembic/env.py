@@ -2,7 +2,7 @@ from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool
 
-from alembic import context  # type: ignore
+from alembic import context  # [no-name-in-module]
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
