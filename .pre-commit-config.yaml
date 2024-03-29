@@ -1,0 +1,28 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0 # Use the latest version
+    hooks:
+      - id: trailing-whitespace
+      - id: check-yaml
+      - id: end-of-file-fixer
+
+  - repo: https://github.com/psf/black
+    rev: 24.3.0 # Use the latest version of black
+    hooks:
+      - id: black
+        language_version: python3.9 # Specify your Python version
+        args: [--line-length=80] # Specify your line length
+
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint --rcfile=.pylintrc --ignore=./alembic/ app/
+        language: system
+        types: [python]
+
+  - repo: https://github.com/pre-commit/mirrors-isort
+    rev: v5.9.3
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]

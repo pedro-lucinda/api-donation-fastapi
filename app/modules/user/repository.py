@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
-from .schemas import UserCreate, ItemCreate, UserUpdate
-from .models import User, Item
+
+from .models import Item, User
+from .schemas import ItemCreate, UserCreate, UserUpdate
 
 
 class UserRepository:
@@ -50,12 +51,14 @@ class UserRepository:
                 setattr(db_user, key, value)
 
             if 'password' in update_data:
-                db_user.hashed_password = self.hash_password(update_data['password'])
+                db_user.hashed_password = self.hash_password(
+                    update_data['password']
+                )
 
             self.db.commit()
             self.db.refresh(db_user)
-            return {
-                "id": db_user.id,
-                "email": db_user.email,
-                "is_active": db_user.is_active,
-            }
+        return {
+            "id": db_user.id,
+            "email": db_user.email,
+            "is_active": db_user.is_active,
+        }

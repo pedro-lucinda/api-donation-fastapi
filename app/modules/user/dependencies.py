@@ -1,6 +1,8 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session
+
 from app.infra.db.database import get_db
+
 from .repository import UserRepository
 
 

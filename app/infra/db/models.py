@@ -1,7 +1,7 @@
 # infra/db/models.py
 
 # Import models from each module
-from app.modules.user.models import User, Item
+from app.modules.user.models import Item, User
 
 # Import other models as needed
 # from app.modules.othermodule.models import OtherModel

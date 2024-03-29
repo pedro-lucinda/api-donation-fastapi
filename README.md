@@ -1,10 +1,14 @@
 # in progress
 
-### Migrations
+### Run the application
 ```
-- Make migration
-alembic revision -m "name"
+  uvicorn app.main:app --reload
+```
 
+### Migrations
+- Make migration
+```
+alembic revision -m "name"
 ```
 
 - Migrate
@@ -12,9 +16,14 @@ alembic revision -m "name"
   alembic upgrade head
 ```
 
-
-### Run the application
+### Dependencies
+- Add new dependencies to requirements.in
+- Update requirements.txt
 ```
-  uvicorn app.main:app --reload
+pip-compile requirements.in
+```
 
+- Update the dep to latest version
+```
+pip-compile --upgrade
 ```

@@ -1,8 +1,7 @@
-from app.infra.db.database import Base
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-from typing import Any
-from sqlalchemy.ext.declarative import as_declarative, declared_attr
+
+from app.infra.db.database import Base
 
 
 class User(Base):
