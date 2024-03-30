@@ -5,7 +5,7 @@ from sqlalchemy.orm import declarative_base
 
 from app.infra.config import origins
 from app.infra.db.database import engine
-from app.modules.user.routes import user_router
+from app.router.routes import main_router
 
 load_dotenv()
 
@@ -22,7 +22,7 @@ app.add_middleware(
 )
 
 # Include your routers
-app.include_router(user_router)
+app.include_router(main_router)
 
 # Create the database tables if they don't exist
 Base = declarative_base()
