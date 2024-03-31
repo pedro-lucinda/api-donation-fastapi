@@ -15,7 +15,7 @@ disable=
     missing-function-docstring
 
 [FORMAT]
-max-line-length = 80
+max-line-length = 98
 indent-string = '    '
 
 [DESIGN]

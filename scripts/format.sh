@@ -1,3 +1,2 @@
 #!/bin/bash
-black app/ --line-length 80
-
+black ./app/ --line-length 89
