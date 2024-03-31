@@ -11,7 +11,7 @@ repos:
     hooks:
       - id: black
         language_version: python3.9 # Specify your Python version
-        args: [--line-length=80] # Specify your line length
+        args: [--line-length=98] # Specify your line length
 
   - repo: local
     hooks:
