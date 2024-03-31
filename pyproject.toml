@@ -1,5 +1,5 @@
 [tool.black]
-line-length = 100  # Adjust line length to your preference
+line-length = 98  # Adjust line length to your preference
 skip-string-normalization = true  # Preserves the original quote style used in the string
 target-version = ['py39']  # Target a specific Python version
 include = '\.pyi?$'
