@@ -22,7 +22,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: AI Code Reviewer
-      uses: freeedcom/ai-codereviewer@v2.7.0
+      uses: pedro-lucinda/ai-code-reviewer@main
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
