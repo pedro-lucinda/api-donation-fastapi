@@ -37,10 +37,10 @@ class CauseRepository:
         List[Cause]
             A list of all causes retrieved from the database.
         """
-        return [
-            CauseSchema.model_validate(cause)
-            for cause in self.db.query(Cause).all()
-        ]
+        causes = self.db.query(Cause).all()
+        if not causes:
+            return []
+        return [CauseSchema.model_validate(cause) for cause in causes]
 
     def create_cause(self, data: CreateCause):
         """
@@ -262,3 +262,31 @@ class CauseRepository:
             raise ValueError("Institute not found")
 
         return user_id in [admin.id for admin in institute.admins]
+
+    def delete_cause(self, cause_id: int, user_id: int):
+        """
+        Delete a cause from the database.
+
+        This method deletes a cause from the database.
+
+        Parameters
+        ----------
+        cause_id : int
+            The ID of the cause to delete.
+        user_id : int
+            The ID of the user requesting the deletion.
+
+        Returns
+        -------
+        Cause
+            The cause that was deleted.
+        """
+        if not self.is_user_allowed(user_id=user_id, cause_id=cause_id):
+            raise ValueError("User not allowed")
+
+        cause = self.db.query(Cause).filter(Cause.id == cause_id).first()
+        if not cause:
+            raise ValueError("Cause not found")
+
+        self.db.delete(cause)
+        self.db.commit()

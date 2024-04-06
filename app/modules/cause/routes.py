@@ -154,3 +154,34 @@ def toogle_active_cause(
     except Exception as e:
         logger.error("An error occurred when updating a cause: %s", e)
         raise HTTPException(status_code=400, detail=str(e)) from e
+
+
+@cause_routes.delete("/{cause_id}/{user_id}")
+def delete_cause(
+    cause_id: int,
+    user_id: int,
+    cause_repository: CauseRepository = Depends(get_cause_repository),
+):
+    """
+    Delete a cause.
+
+    This route receives a cause_id in the path parameters and uses the CauseRepository to delete
+    the cause from the database.
+
+    Parameters
+    ----------
+    cause_id : int
+        The ID of the cause to be deleted.
+    cause_repository : CauseRepository = Depends(get_cause_repository)
+        The instance of CauseRepository used to perform database operations.
+
+    Returns
+    -------
+    None
+    """
+    try:
+        cause_repository.delete_cause(cause_id, user_id)
+        logger.info("Cause deleted successfully: %s", cause_id)
+    except Exception as e:
+        logger.error("An error occurred when deleting a cause: %s", e)
+        raise HTTPException(status_code=400, detail=str(e)) from e
