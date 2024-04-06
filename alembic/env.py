@@ -1,11 +1,16 @@
 from logging.config import fileConfig
+
 from sqlalchemy import engine_from_config, pool
+
 from alembic import context
 from app.infra.db.database import Base  # Make sure this is the right declarative base
+from app.modules.cause.models import *
+from app.modules.donation.models import *
+from app.modules.institute.models import *
 
 # If models are in separate modules and use the same declarative base,
 # importing them here ensures they're known to the MetaData
-from app.modules.user.models import User, Item
+from app.modules.user.models import *
 
 # Alembic Config object, which provides access to the .ini file in use.
 config = context.config

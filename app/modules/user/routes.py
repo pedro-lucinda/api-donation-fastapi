@@ -6,10 +6,10 @@ from . import schemas
 from .dependencies import get_user_repository
 from .repository import UserRepository
 
-user_router = APIRouter()
+user_router = APIRouter(prefix="/user", tags=["User"])
 
 
-@user_router.post("/users/", response_model=schemas.User)
+@user_router.post("/", response_model=schemas.User)
 def create_user(
     user: schemas.UserCreate,
     user_repository: UserRepository = Depends(get_user_repository),
@@ -34,15 +34,19 @@ def create_user(
     HTTPException
         If the email is already registered.
     """
-    db_user = user_repository.get_user_by_email(email=user.email)
-    if db_user:
-        logger.error("Email already registered")
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return user_repository.create_user(user=user)
+    try:
+        db_user = user_repository.get_user_by_email(email=user.email)
+        if db_user:
+            logger.error("Email already registered")
+            raise HTTPException(status_code=400, detail="Email already registered")
+        return user_repository.create_user(user=user)
+    except Exception as e:
+        logger.error("Error creating user %s", e)
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@user_router.get("/users/", response_model=list[schemas.User])
-def read_users(
+@user_router.get("/", response_model=list[schemas.User])
+def list_users(
     skip: int = 0,
     limit: int = 100,
     user_repository: UserRepository = Depends(get_user_repository),
@@ -64,14 +68,17 @@ def read_users(
     list[schemas.User]
         A list of user objects.
     """
-    users = user_repository.get_users(skip=skip, limit=limit)
-    return users
+    try:
+        users = user_repository.get_users(skip=skip, limit=limit)
+        logger.info("Users fetched successfully")
+        return users
+    except Exception as e:
+        logger.error("Error fetching users")
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@user_router.get("/users/{user_id}", response_model=schemas.User)
-def read_user(
-    user_id: int, user_repository: UserRepository = Depends(get_user_repository)
-):
+@user_router.get("/{user_id}", response_model=schemas.User)
+def read_user(user_id: int, user_repository: UserRepository = Depends(get_user_repository)):
     """
     Retrieve a user by their user ID.
 
@@ -92,90 +99,18 @@ def read_user(
     HTTPException
         If no user with the given ID was found.
     """
-    db_user = user_repository.get_user(user_id=user_id)
-    if db_user is None:
-        logger.error("User not found")
-        raise HTTPException(status_code=404, detail="User not found")
-    return db_user
+    try:
+        user = user_repository.get_user_by_id(user_id=user_id)
+        if not user:
+            logger.error("User not found")
+            raise HTTPException(status_code=404, detail="User not found")
+        return user
+    except Exception as e:
+        logger.error("Error fetching user %s", e)
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@user_router.post("/users/{user_id}/items/", response_model=schemas.Item)
-def create_item_for_user(
-    user_id: int,
-    item: schemas.ItemCreate,
-    user_repository: UserRepository = Depends(get_user_repository),
-):
-    """
-    Create a new item for a specified user.
-
-    Parameters
-    ----------
-    user_id : int
-        The ID of the user for whom to create the item.
-    item : schemas.ItemCreate
-        The item data for creating a new item.
-    user_repository : UserRepository
-        The user repository dependency.
-
-    Returns
-    -------
-    schemas.Item
-        The created item object.
-    """
-    return user_repository.create_user_item(item=item, user_id=user_id)
-
-
-@user_router.get("/items/", response_model=list[schemas.Item])
-def read_items(
-    skip: int = 0,
-    limit: int = 100,
-    user_repository: UserRepository = Depends(get_user_repository),
-):
-    """
-    Retrieve a list of items, with pagination.
-
-    Parameters
-    ----------
-    skip : int, optional
-        The number of items to skip (default is 0).
-    limit : int, optional
-        The maximum number of items to return (default is 100).
-    user_repository : UserRepository
-        The user repository dependency.
-
-    Returns
-    -------
-    list[schemas.Item]
-        A list of item objects.
-    """
-    items = user_repository.get_items(skip=skip, limit=limit)
-    return items
-
-
-@user_router.delete("/users/{user_id}")
-def delete_user_by_id(
-    user_id: int, user_repository: UserRepository = Depends(get_user_repository)
-):
-    """
-    Delete a user by their user ID.
-
-    Parameters
-    ----------
-    user_id : int
-        The ID of the user to be deleted.
-    user_repository : UserRepository
-        The user repository dependency.
-
-    Returns
-    -------
-    dict
-        A message indicating successful deletion.
-    """
-    user_repository.delete_user(user_id)
-    return {"message": "User deleted successfully"}
-
-
-@user_router.put("/users/{user_id}")
+@user_router.put("/{user_id}")
 def update_user_by_id(
     user_id: int,
     user: schemas.UserUpdate,
@@ -198,4 +133,10 @@ def update_user_by_id(
     schemas.User
         The updated user object.
     """
-    return user_repository.update_user(user_id, user)
+    try:
+        updated_user = user_repository.update_user(user_id=user_id, user_update=user)
+        logger.info("User updated successfully %s", updated_user.id)
+        return updated_user
+    except Exception as e:
+        logger.error("Error updating user %s", e)
+        raise HTTPException(status_code=500, detail=str(e)) from e
