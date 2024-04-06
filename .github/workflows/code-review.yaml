@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: AI Code Reviewer
-         uses: pedro-lucinda/ai-code-reviewer@main
+         uses: pedro-lucinda/ai-codereviewer@v2.7.0
 
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
