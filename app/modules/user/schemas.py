@@ -3,38 +3,25 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr
 
 
-class ItemBase(BaseModel):
-    title: str
-    description: Optional[str] = None
-
-
-class ItemCreate(ItemBase):
-    pass
-
-
-class Item(ItemBase):
-    id: int
-    owner_id: int
-
-    class Config:
-        from_attributes = True
-
-
 class UserBase(BaseModel):
-    email: str
+    email: EmailStr
 
     class Config:
         from_attributes = True
 
 
 class UserCreate(UserBase):
-    password: str
+    first_name: str
+    last_name: str
+    cpf: str
 
 
 class User(UserBase):
     id: int
     is_active: bool
-    items: list[Item] = []
+    first_name: str
+    last_name: str
+    cpf: str
 
     class Config:
         from_attributes = True
@@ -42,8 +29,10 @@ class User(UserBase):
 
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
-    password: Optional[str] = None
     is_active: Optional[bool] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    cpf: Optional[str] = None
 
     class Config:
         from_attributes = True
