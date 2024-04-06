@@ -9,11 +9,17 @@ The `__all__` list explicitly declares the names that should be imported when
 namespace exposed by the module and prevent unintended imports.
 """
 
+from app.modules.cause.models import Cause
+from app.modules.donation.models import Donation
+from app.modules.institute.models import Institute
+
 # Import models from each module
-from app.modules.user.models import Item, User
+from app.modules.user.models import User
 
 # Expose them through a single interface
 __all__ = [
     "User",
-    "Item",
+    "Donation",
+    "Cause",
+    "Institute",
 ]

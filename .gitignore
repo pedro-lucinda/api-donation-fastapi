@@ -127,7 +127,6 @@ cython_debug/
 
 # Alchemy migrations
 alembic.ini
-alembic/
 
 # Database files
 *.db

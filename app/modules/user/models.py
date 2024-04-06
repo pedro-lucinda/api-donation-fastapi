@@ -1,26 +1,24 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
-from app.infra.db.database import Base
+from app.infra.db.shared.models import TimeStampModel
 
 
-class User(Base):
+class UserBase(TimeStampModel):
+    __abstract__ = True
+
+    id = Column(Integer, primary_key=True)
+    email = Column(String, unique=True, index=True)
+    is_active = Column(Boolean, default=True)
+    first_name = Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
+
+
+class User(UserBase):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True)
-    email = Column(String, unique=True, index=True)  # Type hint as str
-    hashed_password = Column(String)  # Type hint as str
-    is_active = Column(Boolean, default=True)
+    cpf = Column(String(length=11), unique=True, index=True)
+    donations = relationship("Donation", back_populates="user")
 
-    items = relationship("Item", back_populates="owner")
-
-
-class Item(Base):
-    __tablename__ = "items"
-
-    id = Column(Integer, primary_key=True)
-    title = Column(String, index=True)
-    description = Column(String, index=True)
-    owner_id = Column(Integer, ForeignKey("users.id"))
-
-    owner = relationship("User", back_populates="items")
+    institute_id = Column(Integer, ForeignKey('institute.id'), nullable=True)
+    institute = relationship("Institute", back_populates="admins")
