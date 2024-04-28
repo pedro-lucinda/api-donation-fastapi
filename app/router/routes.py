@@ -18,7 +18,7 @@ from app.modules.cause.routes import cause_routes
 from app.modules.donation.routes import donation_router
 from app.modules.institute.routes import institute_routes
 from app.modules.user.routes import user_router
-
+from app.modules.auth.routes import auth_router
 main_router = APIRouter()
 
 # Include your routers
@@ -26,3 +26,4 @@ main_router.include_router(user_router)
 main_router.include_router(donation_router)
 main_router.include_router(cause_routes)
 main_router.include_router(institute_routes)
+main_router.include_router(auth_router)

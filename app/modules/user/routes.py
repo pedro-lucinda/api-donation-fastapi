@@ -38,9 +38,7 @@ def create_user(
         db_user = user_repository.get_user_by_email(email=user.email)
         if db_user:
             logger.error("Email already registered")
-            raise HTTPException(
-                status_code=400, detail="Email already registered"
-            )
+            raise HTTPException(status_code=400, detail="Email already registered")
         return user_repository.create_user(user=user)
     except Exception as e:
         logger.error("Error creating user %s", e)
@@ -80,9 +78,7 @@ def list_users(
 
 
 @user_router.get("/{user_id}", response_model=schemas.User)
-def read_user(
-    user_id: int, user_repository: UserRepository = Depends(get_user_repository)
-):
+def read_user(user_id: int, user_repository: UserRepository = Depends(get_user_repository)):
     """
     Retrieve a user by their user ID.
 
@@ -138,9 +134,7 @@ def update_user_by_id(
         The updated user object.
     """
     try:
-        updated_user = user_repository.update_user(
-            user_id=user_id, user_update=user
-        )
+        updated_user = user_repository.update_user(user_id=user_id, user_update=user)
         logger.info("User updated successfully %s", updated_user.id)
         return updated_user
     except Exception as e:

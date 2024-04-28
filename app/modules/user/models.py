@@ -17,7 +17,10 @@ class UserBase(TimeStampModel):
 class User(UserBase):
     __tablename__ = "users"
 
-    cpf = Column(String(length=11), unique=True, index=True)
+    cpf = Column(String(length=11), unique=True, index=True, nullable=True)
+    picture = Column(String, nullable=True)
+    locale = Column(String, nullable=True)
+
     donations = relationship("Donation", back_populates="user")
 
     institute_id = Column(Integer, ForeignKey('institute.id'), nullable=True)

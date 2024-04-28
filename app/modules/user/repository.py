@@ -1,8 +1,11 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 
 from .models import User
 from .schemas import UserCreate, UserUpdate
+
+from sqlalchemy.exc import SQLAlchemyError
 
 
 class UserRepository:
@@ -42,22 +45,6 @@ class UserRepository:
         """
         return self.db.query(User).filter(User.id == user_id).first()
 
-    def get_user_by_email(self, email: str):
-        """
-        Fetches a user by their email.
-
-        Parameters
-        ----------
-        email : str
-            The email of the user to fetch.
-
-        Returns
-        -------
-        User
-            The fetched user object, or None if not found.
-        """
-        return self.db.query(User).filter(User.email == email).first()
-
     def get_users(self, skip: int = 0, limit: int = 100):
         """
         Fetches a list of users, implementing pagination.
@@ -76,6 +63,32 @@ class UserRepository:
         """
         return self.db.query(User).offset(skip).limit(limit).all()
 
+    def get_user_by_email(self, email: str):
+        """
+        Fetches a user by their email address.
+
+        Parameters
+        ----------
+        email : str
+            The email address of the user to fetch.
+        
+        Returns
+        -------
+        User
+            The fetched user object, or None if not found.
+        
+        Raises
+        ------
+        HTTPException
+            If there is an issue with the database query.
+        """
+        try:
+            return self.db.query(User).filter(User.email == email).first()
+        except SQLAlchemyError as e:
+            print(e)
+            self.db.rollback()
+            raise HTTPException(status_code=500, detail="Database query failed") from e
+
     def create_user(self, user: UserCreate):
         """
         Creates a new user in the database.
@@ -84,23 +97,36 @@ class UserRepository:
         ----------
         user : UserCreate
             The schema containing the user's information.
-
+        
         Returns
         -------
         User
             The created user object.
+        
+        Raises
+        ------
+        HTTPException
+            If the email is already registered.
         """
-        existing_user = self.get_user_by_email(user.email)
-        if existing_user:
-            raise HTTPException(
-                status_code=400, detail="Email is already registered"
-            )
+        try:
+            existing_user = self.get_user_by_email(user.email)
+            if existing_user:
+                raise HTTPException(status_code=400, detail="Email is already registered")
 
-        db_user = User(**user.model_dump())
-        self.db.add(db_user)
-        self.db.commit()
-        self.db.refresh(db_user)
-        return db_user
+            db_user = User(**user.dict())
+            self.db.add(db_user)
+            self.db.commit()
+            self.db.refresh(db_user)
+            return db_user
+        except SQLAlchemyError as e:
+            print(e)
+            self.db.rollback()
+            raise HTTPException(status_code=500, detail="Database transaction failed")
+        except HTTPException as http_exc:
+            self.db.rollback()
+            raise http_exc
+        finally:
+            self.db.close()
 
     def update_user(self, user_id: int, user_update: UserUpdate):
         """
@@ -146,3 +172,15 @@ class UserRepository:
             The fetched user object, or None if not found.
         """
         return self.db.query(User).filter(User.id == user_id).first()
+
+    def deleteAll(self):
+        """
+        Deletes all users from the database.
+
+        Returns
+        -------
+        None
+        """
+        self.db.query(User).delete()
+        self.db.commit()
+        return None
