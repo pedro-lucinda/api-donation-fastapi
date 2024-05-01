@@ -25,8 +25,8 @@ from app.modules.auth.dependecies import get_current_user
 main_router = APIRouter()
 
 # Include your routers
+main_router.include_router(auth_router)
+main_router.include_router(user_router, dependencies=[Depends(get_current_user)])
 main_router.include_router(donation_router, dependencies=[Depends(get_current_user)])
 main_router.include_router(cause_routes, dependencies=[Depends(get_current_user)])
 main_router.include_router(institute_routes, dependencies=[Depends(get_current_user)])
-main_router.include_router(user_router, dependencies=[Depends(get_current_user)])
-main_router.include_router(auth_router)
