@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.infra.logger.config import logger
+from app.modules.user.schemas import User
+from app.modules.auth.dependecies import get_current_user
 
 from . import schemas
 from .dependencies import get_cause_repository
@@ -12,10 +14,12 @@ cause_routes = APIRouter(prefix="/causes", tags=["Causes"])
 @cause_routes.post("/", response_model=schemas.CauseSchema)
 def create_cause(
     cause: schemas.CreateCause,
+    user: User = Depends(get_current_user),
     cause_repository: CauseRepository = Depends(get_cause_repository),
 ):
     try:
-        new_cause_dict = cause_repository.create_cause(cause)
+        user_id = user.id
+        new_cause_dict = cause_repository.create_cause(user_id, cause)
         logger.info("Cause created successfully: %s", new_cause_dict['id'])
         return schemas.CauseSchema(**new_cause_dict)
     except Exception as e:
@@ -23,11 +27,11 @@ def create_cause(
         raise HTTPException(status_code=400, detail=str(e)) from e
 
 
-@cause_routes.put("/{cause_id}/{user_id}", response_model=schemas.CauseSchema)
+@cause_routes.put("/{cause_id}", response_model=schemas.CauseSchema)
 def update_cause(
     cause_id: int,
-    user_id: int,
     cause: schemas.UpdateCause,
+    user: User = Depends(get_current_user),
     cause_repository: CauseRepository = Depends(get_cause_repository),
 ):
     """
@@ -52,6 +56,7 @@ def update_cause(
         The schema representing the updated cause.
     """
     try:
+        user_id = user.id
         updated_cause = cause_repository.update_cause(cause_id, user_id, cause)
         logger.info("Cause updated successfully: %s", updated_cause.id)
         return updated_cause
@@ -86,7 +91,6 @@ def get_cause(
     try:
         cause = cause_repository.get_cause_by_id(cause_id)
         logger.info("Cause retrieved successfully: %s", cause.id)
-        print("CAUSEEEEEEEEEEEE__", cause)
         return cause
     except Exception as e:
         logger.error("An error occurred when retrieving a cause: %s", e)
@@ -121,12 +125,10 @@ def list_causes(
         raise HTTPException(status_code=400, detail=str(e)) from e
 
 
-@cause_routes.put(
-    "/activate/{user_id}/{cause_id}", response_model=schemas.CauseSchema
-)
+@cause_routes.put("/activate/{cause_id}", response_model=schemas.CauseSchema)
 def toogle_active_cause(
-    user_id: int,
     cause_id: int,
+    user: User = Depends(get_current_user),
     cause_repository: CauseRepository = Depends(get_cause_repository),
 ):
     """
@@ -148,9 +150,43 @@ def toogle_active_cause(
         The schema representing the updated cause.
     """
     try:
+        user_id = user.id
         updated_cause = cause_repository.toogle_cause_active(user_id, cause_id)
         logger.info("Cause updated successfully: %s", updated_cause.id)
         return updated_cause
     except Exception as e:
         logger.error("An error occurred when updating a cause: %s", e)
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+
+@cause_routes.delete("/{cause_id}")
+def delete_cause(
+    cause_id: int,
+    user: User = Depends(get_current_user),
+    cause_repository: CauseRepository = Depends(get_cause_repository),
+):
+    """
+    Delete a cause.
+
+    This route receives a cause_id in the path parameters and uses the CauseRepository to delete
+    the cause from the database.
+
+    Parameters
+    ----------
+    cause_id : int
+        The ID of the cause to be deleted.
+    cause_repository : CauseRepository = Depends(get_cause_repository)
+        The instance of CauseRepository used to perform database operations.
+
+    Returns
+    -------
+    None
+    """
+    try:
+        user_id = user.id
+        cause_repository.delete_cause(cause_id, user_id)
+        logger.info("Cause deleted successfully: %s", cause_id)
+        return {"message": "Cause deleted successfully"}
+    except Exception as e:
+        logger.error("An error occurred when deleting a cause: %s", e)
         raise HTTPException(status_code=400, detail=str(e)) from e

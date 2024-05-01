@@ -12,7 +12,6 @@ class CauseBase(BaseModel):
 
 class CreateCause(CauseBase):
     institute_id: int
-    user_id: int
 
 
 class UpdateCause(BaseModel):

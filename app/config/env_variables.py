@@ -29,18 +29,26 @@ def validate_env_variables():
         If any of the required environment variables are not set.
     """
 
-    required_env_vars = ["LOGGER_TOKEN", "DATABASE_URL", "ALLOWED_ORIGINS"]
+    required_env_vars = [
+        "LOGGER_TOKEN",
+        "DATABASE_URL",
+        "ALLOWED_ORIGINS",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "GOOGLE_REDIRECT_URI",
+    ]
     missing_vars = [var for var in required_env_vars if not os.getenv(var)]
     if missing_vars:
-        raise ValueError(
-            f"Missing environment variables: {', '.join(missing_vars)}"
-        )
+        raise ValueError(f"Missing environment variables: {', '.join(missing_vars)}")
 
 
 # Load environment variables from .env file
 LOGGER_TOKEN = os.getenv("LOGGER_TOKEN")
-DATABASE_URL = (
-    os.getenv("DATABASE_URL")
-    or "postgresql://myuser:mypass@localhost:5432/mydatabase"
-)
+DATABASE_URL = os.getenv("DATABASE_URL") or "postgresql://myuser:mypass@localhost:5432/mydatabase"
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS").split(",")
+
+# AUTH
+# GOOGLE OAUTH
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")

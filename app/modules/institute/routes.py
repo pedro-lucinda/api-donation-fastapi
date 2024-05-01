@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.infra.logger.config import logger
 from app.modules.user.schemas import User
+from app.modules.auth.dependecies import get_current_user
 
 from . import schemas
 from .dependencies import get_institute_repository
@@ -10,12 +11,11 @@ from .repository import InstituteRepository
 institute_routes = APIRouter(prefix="/institutes", tags=["Institutes"])
 
 
-@institute_routes.post("/", response_model=schemas.InstituteSchema)
+@institute_routes.post("/", response_model=schemas.InstituteSchema, )
 def create_institute(
     institute: schemas.CreateInstitute,
-    institute_repository: InstituteRepository = Depends(
-        get_institute_repository
-    ),
+    user: User = Depends(get_current_user),
+    institute_repository: InstituteRepository = Depends(get_institute_repository),
 ):
     """
     Create a new institute in the database.
@@ -35,7 +35,8 @@ def create_institute(
         The model representing the created institute.
     """
     try:
-        new_institute = institute_repository.create_institute(institute)
+        user_id = user.id
+        new_institute = institute_repository.create_institute(user_id, institute)
         logger.info("Institute created successfully %s", new_institute.id)
         return new_institute
     except Exception as e:
@@ -43,16 +44,12 @@ def create_institute(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@institute_routes.put(
-    "/{institute_id}/{user_id}", response_model=schemas.InstituteSchema
-)
+@institute_routes.put("/{institute_id}", response_model=schemas.InstituteSchema)
 def update_institute(
     institute_id: int,
-    user_id: int,
     data: schemas.UpdateInstitute,
-    institute_repository: InstituteRepository = Depends(
-        get_institute_repository
-    ),
+    institute_repository: InstituteRepository = Depends(get_institute_repository),
+    user: User = Depends(get_current_user),
 ) -> schemas.InstituteSchema:
     """
     Update an institute in the database.
@@ -75,9 +72,8 @@ def update_institute(
         The model representing the updated institute.
     """
     try:
-        updated_institute = institute_repository.update_institute(
-            institute_id, user_id, data
-        )
+        user_id=user.id
+        updated_institute = institute_repository.update_institute(institute_id, user_id, data)
         logger.info("Institute updated successfully %s", updated_institute.id)
         return updated_institute
     except Exception as e:
@@ -88,9 +84,7 @@ def update_institute(
 @institute_routes.post("/add-admin", response_model=schemas.InstituteSchema)
 def add_admin(
     data: schemas.AddAdmin,
-    institute_repository: InstituteRepository = Depends(
-        get_institute_repository
-    ),
+    institute_repository: InstituteRepository = Depends(get_institute_repository),
 ) -> schemas.InstituteSchema:
     """
     Add an admin to an institute.
@@ -118,15 +112,11 @@ def add_admin(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@institute_routes.get(
-    "/{institute_id}/{user_id}/admins", response_model=schemas.AdminsList
-)
+@institute_routes.get("/{institute_id}/admins", response_model=schemas.AdminsList)
 def get_admins(
     institute_id: int,
-    user_id: int,
-    institute_repository: InstituteRepository = Depends(
-        get_institute_repository
-    ),
+    user: User = Depends(get_current_user),
+    institute_repository: InstituteRepository = Depends(get_institute_repository),
 ) -> list[User]:
     """
     Get the admins of an institute.
@@ -146,6 +136,7 @@ def get_admins(
         The list of users representing the admins of the institute.
     """
     try:
+        user_id = user.id
         admins = institute_repository.get_admins(institute_id, user_id)
         logger.info("Admins retrieved successfully")
         return admins

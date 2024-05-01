@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.infra.logger.config import logger
+from app.modules.auth.dependecies import get_current_user
+from app.modules.user.schemas import User
 
 from . import schemas
 from .dependencies import get_donation_repository
@@ -12,6 +14,7 @@ donation_router = APIRouter(prefix="/donation", tags=["Donation"])
 @donation_router.post("/", response_model=schemas.Donation)
 def create_donation(
     donation: schemas.CreateDonation,
+    user: User = Depends(get_current_user),
     donation_repository: DonationRepository = Depends(get_donation_repository),
 ):
     """
@@ -36,6 +39,7 @@ def create_donation(
     """
     try:
         created_donation = donation_repository.create_donation(
+            user_id=user.id,
             data=donation,
         )
         logger.info("Donation created successfully: %s", created_donation.id)
@@ -48,13 +52,11 @@ def create_donation(
         raise HTTPException(status_code=400, detail=str(e)) from e
 
 
-@donation_router.put(
-    "/{user_id}/{donation_id}", response_model=schemas.Donation
-)
+@donation_router.put("/{donation_id}", response_model=schemas.Donation)
 def update_donation(
-    user_id: int,
     donation_id: int,
     donation: schemas.UpdateDonation,
+    user: User = Depends(get_current_user),
     donation_repository: DonationRepository = Depends(get_donation_repository),
 ):
     """
@@ -83,7 +85,7 @@ def update_donation(
     """
     try:
         updated_donation = donation_repository.update_donation(
-            user_id=user_id,
+            user_id=user.id,
             donation_id=donation_id,
             data=donation,
         )

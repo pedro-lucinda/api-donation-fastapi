@@ -34,9 +34,7 @@ class InstituteRepository:
         """
         self.db = db
 
-    def create_institute(
-        self, institute_data: CreateInstitute
-    ) -> InstituteSchema:
+    def create_institute(self, user_id: int, institute_data: CreateInstitute) -> InstituteSchema:
         """
         Create a new institute in the database.
 
@@ -50,11 +48,7 @@ class InstituteRepository:
         InstituteSchema
             The schema representing the created institute.
         """
-        user = (
-            self.db.query(User)
-            .filter(User.id == institute_data.user_id)
-            .first()
-        )
+        user = self.db.query(User).filter(User.id == user_id).first()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
@@ -78,6 +72,7 @@ class InstituteRepository:
             email=db_institute.email,
             cnpj=db_institute.cnpj,
             is_active=db_institute.is_active,
+            admins=[UserSchema.model_validate(admin) for admin in db_institute.admins],
         )
 
     def update_institute(
@@ -102,15 +97,9 @@ class InstituteRepository:
             The model representing the updated institute.
         """
         if not self.is_admin(user_id, institute_id):
-            raise HTTPException(
-                status_code=403, detail="User is not an admin of the institute"
-            )
+            raise HTTPException(status_code=403, detail="User is not an admin of the institute")
 
-        updated_institute = (
-            self.db.query(Institute)
-            .filter(Institute.id == institute_id)
-            .first()
-        )
+        updated_institute = self.db.query(Institute).filter(Institute.id == institute_id).first()
         if not updated_institute:
             raise HTTPException(status_code=404, detail="Institute not found")
 
@@ -138,11 +127,7 @@ class InstituteRepository:
         Institute
             The model representing the updated institute.
         """
-        institute = (
-            self.db.query(Institute)
-            .filter(Institute.id == data.institute_id)
-            .first()
-        )
+        institute = self.db.query(Institute).filter(Institute.id == data.institute_id).first()
         if not institute:
             raise HTTPException("Institute not found")
 
@@ -210,21 +195,13 @@ class InstituteRepository:
             If the institute is not found.
         """
         if not self.is_admin(user_id, institute_id):
-            raise HTTPException(
-                status_code=403, detail="User is not an admin of the institute"
-            )
+            raise HTTPException(status_code=403, detail="User is not an admin of the institute")
 
-        institute = (
-            self.db.query(Institute)
-            .filter(Institute.id == institute_id)
-            .first()
-        )
+        institute = self.db.query(Institute).filter(Institute.id == institute_id).first()
 
         if not institute or not institute.admins:
             raise HTTPException(status_code=404, detail="Not found")
 
-        admin_schemas = [
-            UserSchema.model_validate(admin) for admin in institute.admins
-        ]
+        admin_schemas = [UserSchema.model_validate(admin) for admin in institute.admins]
 
         return AdminsList(admins=admin_schemas)

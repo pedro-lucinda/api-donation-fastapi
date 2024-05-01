@@ -37,12 +37,12 @@ class CauseRepository:
         List[Cause]
             A list of all causes retrieved from the database.
         """
-        return [
-            CauseSchema.model_validate(cause)
-            for cause in self.db.query(Cause).all()
-        ]
+        causes = self.db.query(Cause).all()
+        if not causes:
+            return []
+        return [CauseSchema.model_validate(cause) for cause in causes]
 
-    def create_cause(self, data: CreateCause):
+    def create_cause(self, user_id: int, data: CreateCause):
         """
         Create a new cause in the database.
 
@@ -60,13 +60,11 @@ class CauseRepository:
             The schema representing the created cause.
         """
 
-        if self.get_cause_by_title(
-            title=data.title, institute_id=data.institute_id
-        ):
+        if self.get_cause_by_title(title=data.title, institute_id=data.institute_id):
             raise ValueError("Cause already exists")
 
         if not self.is_user_allowed_by_institute(
-            user_id=data.user_id, institute_id=data.institute_id
+            user_id=user_id, institute_id=data.institute_id
         ):
             raise ValueError("User not allowed")
 
@@ -78,11 +76,7 @@ class CauseRepository:
             is_active=True,
         )
 
-        institute = (
-            self.db.query(Institute)
-            .filter(Institute.id == data.institute_id)
-            .first()
-        )
+        institute = self.db.query(Institute).filter(Institute.id == data.institute_id).first()
         cause.institute = institute
 
         self.db.add(cause)
@@ -232,9 +226,7 @@ class CauseRepository:
         institute = cause.institute
         return user_id in [admin.id for admin in institute.admins]
 
-    def is_user_allowed_by_institute(
-        self, user_id: int, institute_id: int
-    ) -> bool:
+    def is_user_allowed_by_institute(self, user_id: int, institute_id: int) -> bool:
         """
         Check if a user is allowed to access an institute.
 
@@ -253,12 +245,36 @@ class CauseRepository:
         bool
             True if the user is allowed to access the institute, False otherwise.
         """
-        institute = (
-            self.db.query(Institute)
-            .filter(Institute.id == institute_id)
-            .first()
-        )
+        institute = self.db.query(Institute).filter(Institute.id == institute_id).first()
         if not institute:
             raise ValueError("Institute not found")
 
         return user_id in [admin.id for admin in institute.admins]
+
+    def delete_cause(self, cause_id: int, user_id: int):
+        """
+        Delete a cause from the database.
+
+        This method deletes a cause from the database.
+
+        Parameters
+        ----------
+        cause_id : int
+            The ID of the cause to delete.
+        user_id : int
+            The ID of the user requesting the deletion.
+
+        Returns
+        -------
+        Cause
+            The cause that was deleted.
+        """
+        if not self.is_user_allowed(user_id=user_id, cause_id=cause_id):
+            raise ValueError("User not allowed")
+
+        cause = self.db.query(Cause).filter(Cause.id == cause_id).first()
+        if not cause:
+            raise ValueError("Cause not found")
+
+        self.db.delete(cause)
+        self.db.commit()

@@ -12,17 +12,21 @@ main_router : APIRouter
     The main router instance that aggregates routes from various modules.
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from app.modules.cause.routes import cause_routes
 from app.modules.donation.routes import donation_router
 from app.modules.institute.routes import institute_routes
 from app.modules.user.routes import user_router
+from app.modules.auth.routes import auth_router
+
+from app.modules.auth.dependecies import get_current_user
 
 main_router = APIRouter()
 
 # Include your routers
-main_router.include_router(user_router)
-main_router.include_router(donation_router)
-main_router.include_router(cause_routes)
-main_router.include_router(institute_routes)
+main_router.include_router(auth_router)
+main_router.include_router(user_router, dependencies=[Depends(get_current_user)])
+main_router.include_router(donation_router, dependencies=[Depends(get_current_user)])
+main_router.include_router(cause_routes, dependencies=[Depends(get_current_user)])
+main_router.include_router(institute_routes, dependencies=[Depends(get_current_user)])
