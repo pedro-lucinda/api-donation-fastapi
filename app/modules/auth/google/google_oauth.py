@@ -33,7 +33,8 @@ class GoogleOAuth:
 
     def auth_google(self, code: str) -> GoogleUser:
         """
-        Handles the authentication of the user with Google using the code received from Google after user consent.
+        Handles the authentication of the user with Google using the code received from Google
+        after user consent.
 
         Args:
             code (str): The authorization code received from Google.
@@ -78,10 +79,9 @@ class GoogleOAuth:
         Returns:
             dict: The decoded token.
         """
-    
+
         response = requests.get(
             self.user_info_url, headers={"Authorization": f"Bearer {token}"}, timeout=100
         )
         info = response.json()
         return info
-        

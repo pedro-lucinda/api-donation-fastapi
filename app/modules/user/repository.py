@@ -4,8 +4,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from .models import User
 from .schemas import UserCreate, UserUpdate
 
-from sqlalchemy.exc import SQLAlchemyError
-
 
 class UserRepository:
     """
@@ -182,4 +180,3 @@ class UserRepository:
         """
         self.db.query(User).delete()
         self.db.commit()
-        return None

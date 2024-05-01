@@ -9,18 +9,15 @@ disable=
     C0115,  # Missing class docstring
     C0116,  # Missing function or method docstring
     R0903, # Too few public methods
+    C0301, # Line too long
+    R0902, # Too many instance attributes
     missing-docstring,
     missing-module-docstring,
     missing-class-docstring,
     missing-function-docstring
 
 [FORMAT]
-max-line-length = 98
 indent-string = '    '
-
-[DESIGN]
-max-attributes = 10  # Maximum number of attributes for a class
-max-args = 5         # Maximum number of arguments for a function
 
 [BASIC]
 good-names= i, j, k, ex, Run, _
