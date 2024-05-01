@@ -1,7 +1,6 @@
 from typing import List, Optional
 
 from pydantic import BaseModel, EmailStr
-
 from app.modules.user.schemas import User
 
 
@@ -14,8 +13,6 @@ class CreateInstitute(BaseModel):
     email: EmailStr
     cnpj: str
     is_active: bool
-
-    user_id: int
 
 
 class UpdateInstitute(BaseModel):

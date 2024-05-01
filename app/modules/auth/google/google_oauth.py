@@ -1,7 +1,5 @@
-from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordBearer
 import requests
-from jose import jwt
 from app.config.env_variables import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI
 from .schemas import GoogleUser
 
@@ -22,6 +20,7 @@ class GoogleOAuth:
         )
         self.token_url = "https://accounts.google.com/o/oauth2/token"
         self.user_info_url = "https://www.googleapis.com/oauth2/v1/userinfo"
+        self.user_token = "https://www.googleapis.com/oauth2/v3/tokeninfo"
 
     def login_google(self) -> dict:
         """
@@ -73,11 +72,16 @@ class GoogleOAuth:
     def get_token(self, token: str) -> dict:
         """
         Decodes a JWT token using the application's secret.
-
         Args:
             token (str): The JWT token to decode.
 
         Returns:
             dict: The decoded token.
         """
-        return jwt.decode(token, self.client_secret, algorithms=["HS256"])
+    
+        response = requests.get(
+            self.user_info_url, headers={"Authorization": f"Bearer {token}"}, timeout=100
+        )
+        info = response.json()
+        return info
+        

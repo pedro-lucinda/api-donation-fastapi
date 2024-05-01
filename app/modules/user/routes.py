@@ -1,48 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.infra.logger.config import logger
-
+from app.modules.auth.dependecies import get_current_user
 from . import schemas
 from .dependencies import get_user_repository
 from .repository import UserRepository
 
 user_router = APIRouter(prefix="/user", tags=["User"])
-
-
-@user_router.post("/", response_model=schemas.User)
-def create_user(
-    user: schemas.UserCreate,
-    user_repository: UserRepository = Depends(get_user_repository),
-):
-    """
-    Create a new user with the given user data.
-
-    Parameters
-    ----------
-    user : schemas.UserCreate
-        The user data for creating a new user.
-    user_repository : UserRepository
-        The user repository dependency.
-
-    Returns
-    -------
-    schemas.User
-        The created user object.
-
-    Raises
-    ------
-    HTTPException
-        If the email is already registered.
-    """
-    try:
-        db_user = user_repository.get_user_by_email(email=user.email)
-        if db_user:
-            logger.error("Email already registered")
-            raise HTTPException(status_code=400, detail="Email already registered")
-        return user_repository.create_user(user=user)
-    except Exception as e:
-        logger.error("Error creating user %s", e)
-        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @user_router.get("/", response_model=list[schemas.User])
@@ -140,3 +104,21 @@ def update_user_by_id(
     except Exception as e:
         logger.error("Error updating user %s", e)
         raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@user_router.get("/data/me", response_model=schemas.User)
+def read_current_user(user: schemas.User = Depends(get_current_user)):
+    """
+    Retrieve the current user.
+
+    Parameters
+    ----------
+    user : schemas.User
+        The current user.
+
+    Returns
+    -------
+    schemas.User
+        The current user object.
+    """
+    return user

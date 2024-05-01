@@ -26,6 +26,7 @@ class User(UserBase):
     cpf: Optional[str] = None
     picture: Optional[str] = None
     locale: Optional[str] = None
+    institute_id: Optional[int] = None
 
     class Config:
         from_attributes = True

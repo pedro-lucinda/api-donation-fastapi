@@ -1,7 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-
 from .models import User
 from .schemas import UserCreate, UserUpdate
 
@@ -71,12 +70,12 @@ class UserRepository:
         ----------
         email : str
             The email address of the user to fetch.
-        
+
         Returns
         -------
         User
             The fetched user object, or None if not found.
-        
+
         Raises
         ------
         HTTPException
@@ -97,12 +96,12 @@ class UserRepository:
         ----------
         user : UserCreate
             The schema containing the user's information.
-        
+
         Returns
         -------
         User
             The created user object.
-        
+
         Raises
         ------
         HTTPException
@@ -121,7 +120,7 @@ class UserRepository:
         except SQLAlchemyError as e:
             print(e)
             self.db.rollback()
-            raise HTTPException(status_code=500, detail="Database transaction failed")
+            raise HTTPException(status_code=500, detail="Database transaction failed") from e
         except HTTPException as http_exc:
             self.db.rollback()
             raise http_exc

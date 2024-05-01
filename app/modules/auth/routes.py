@@ -69,7 +69,7 @@ def auth_google(
 
 
 @auth_router.get("/google/token")
-def get_token(token: str, google_oauth: GoogleOAuth = Depends(get_google_oauth)):
+def get_authenticated_user(token: str, google_oauth: GoogleOAuth = Depends(get_google_oauth)):
     """
     Decodes the provided JWT token to extract the user's information stored within.
 
@@ -81,7 +81,7 @@ def get_token(token: str, google_oauth: GoogleOAuth = Depends(get_google_oauth))
         The decoded information from the JWT token.
     """
     try:
-        return google_oauth.get_token(token)
+        return google_oauth.get_user_info(token)
     except JWTError as e:
         logger.error("Error decoding token: %s, token = %s", e, token)
         raise HTTPException(
