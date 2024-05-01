@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 
 class CreateDonation(BaseModel):
-    user_id: int
     cause_id: int
 
 

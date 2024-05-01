@@ -26,7 +26,7 @@ class DonationRepository:
         """
         self.db = db
 
-    def create_donation(self, data: CreateDonation):
+    def create_donation(self, user_id: str, data: CreateDonation):
         """
         Creates a new `Donation` entity in the database.
 
@@ -41,14 +41,13 @@ class DonationRepository:
             The newly created `Donation` entity.
         """
         donation = Donation(**data.model_dump())
+        donation.user_id = user_id
         self.db.add(donation)
         self.db.commit()
         self.db.refresh(donation)
         return donation
 
-    def update_donation(
-        self, user_id: int, donation_id: int, data: UpdateDonation
-    ):
+    def update_donation(self, user_id: int, donation_id: int, data: UpdateDonation):
         """
         Updates an existing `Donation` entity in the database.
 
@@ -67,16 +66,10 @@ class DonationRepository:
             The updated `Donation` entity.
         """
         # Ensure the donation exists and is associated with the user
-        donation = (
-            self.db.query(Donation)
-            .filter_by(id=donation_id, user_id=user_id)
-            .first()
-        )
+        donation = self.db.query(Donation).filter_by(id=donation_id, user_id=user_id).first()
 
         if not donation:
-            raise ValueError(
-                "No donation found for this user with the provided ID."
-            )
+            raise ValueError("No donation found for this user with the provided ID.")
 
         for key, value in data.model_dump().items():
             setattr(donation, key, value)
