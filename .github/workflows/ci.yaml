@@ -21,13 +21,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-    - name: AI Code Reviewer
-      uses: pedro-lucinda/ai-codereviewer@main
-      with:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        OPENAI_API_MODEL: "gpt-4" # Optional: defaults to "gpt-4"
-        exclude: "**/*.json, **/*.md, **/alembic, **/*.sh" 
     - name: Lint with pylint
       run: |
         pip install pylint
