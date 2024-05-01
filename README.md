@@ -38,18 +38,6 @@ alembic revision -m "name"
   alembic upgrade head
 ```
 
-### Dependencies
-- Add new dependencies to requirements.in
-- Update requirements.txt
-```base
-pip-compile requirements.in
-```
-
-- Update the dep to latest version
-```base
-pip-compile --upgrade
-```
-
 
 ## Development Tools
 We have included scripts to help with linting, formatting, and database migrations.
